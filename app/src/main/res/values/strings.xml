@@ -1,5 +1,0 @@
-<resources>
-    <string name="app_name">Week2</string>
-    <string name="kakaoApi">1fc54f00a5dcd2dc5cbc858b42c52dbb</string>
-    <string name="serverAddr">http://13.125.12.200:58969</string>
-</resources>

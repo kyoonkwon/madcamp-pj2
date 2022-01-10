@@ -12,7 +12,7 @@ const connection = mysql.createConnection({
   password : process.env.DBPASS,
   database : process.env.DBNAME
 });
-const port = 8080;
+const port = 80;
 
 io.on('connection', (socket) => {
 	console.log("user connect");

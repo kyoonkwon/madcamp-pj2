@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<animation-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/adventure_back1" android:duration="1000" />
-    <item android:drawable="@drawable/adventure_back2" android:duration="1000" />
-    <item android:drawable="@drawable/adventure_back3" android:duration="1000" />
-    <item android:drawable="@drawable/adventure_back4" android:duration="1000" />
-</animation-list>
