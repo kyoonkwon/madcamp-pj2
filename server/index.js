@@ -37,9 +37,17 @@ io.on('connection', (socket) => {
 		getRaidRanking(socket);
 	})
 	
-	socket.on("boss", () =>{
-		
+	socket.on("boss", obj =>{
+		applyGuildDamages(obj.guild, 0, socket);
 	})
+	
+	
+	socket.on("raidDamage", obj => {
+		applyGuildDamages(obj.guild, obj.damage, socket);
+	})
+	
+	
+	
 	
 	socket.on('disconnect', () => {
 		console.log('user disconnect')
@@ -55,6 +63,17 @@ app.get("/", (req, res) => {
   res.send("OK");
 
 })
+
+
+function applyGuildDamages(guild, damage, socket){
+	
+	connection.query(`SELECT hp FROM raid WHERE guild=${obj.guild}`, (_, row, __) =>{
+		var curHp = row[0].hp;
+		var nowHp = Math.max(0, curHp - obj.damage);
+		connection.query(`UPDATE raid SET hp = ${nowHp} where guild=${obj.guild}`)
+		socket.emit("bossHp", `{"hp": ${nowHp}}`);
+	})
+}
 
 function getRaidRanking(socket){
 	
