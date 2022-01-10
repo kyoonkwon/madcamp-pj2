@@ -68,9 +68,12 @@ app.get("/", (req, res) => {
 function applyGuildDamages(guild, damage, socket){
 	
 	connection.query(`SELECT hp FROM raid WHERE guild=${guild}`, (_, row, __) =>{
+		console.log(guild, row);
 		var curHp = row[0].hp;
 		var nowHp = Math.max(0, curHp - damage);
-		connection.query(`UPDATE raid SET hp = ${nowHp} where guild=${guild}`)
+		connection.query(`UPDATE raid SET hp = ${nowHp} where guild=${guild}`, (_, __, ___) => {
+			getRaidRanking(io);
+		})
 		socket.emit("bossHp", `${nowHp}`);
 	})
 }
@@ -79,6 +82,7 @@ function getRaidRanking(socket){
 	
 	var query1 = "SELECT guild, name, raid_damage FROM users WHERE guild="
 	var query2 = " ORDER BY raid_damage DESC"
+	var query3 
 	
 	var raidRanking = [];
 	
@@ -127,8 +131,9 @@ function register(obj, socket){
 		connection.query('SELECT MAX(id) FROM pokemon', (_, prow, __) => {
 			var poke_id = prow[0]['MAX(id)']+1
 			var skills = [{"id": 1, "level":1}, {"id": 2, "level":1}, {"id": 3, "level":1}];
-			connection.query(`INSERT INTO users (id, kakao_id, name, pokemon_id, coin, guild) 
-			VALUES (${user_id}, '${obj.user_id}', '${obj.name}', ${poke_id}, 0, ${obj.classValue})`,
+			var end_time = new Date().getTime();
+			
+			connection.query(`INSERT INTO users (id, kakao_id, name, pokemon_id, coin, guild, raid_damage, raid_cnt, end_time)	VALUES (${user_id}, '${obj.user_id}', '${obj.name}', ${poke_id}, 50, ${obj.classValue}, ${0}, ${3}, ${end_time})`,
 							(_, __, ___) => {
 				connection.query(`INSERT INTO pokemon (id, level, skills, exp, number)
 				VALUES (${poke_id}, 1, JSON_MERGE_PATCH(skills, '${JSON.stringify(skills)}'), 0, ${obj.pokeNum})`, 
@@ -138,7 +143,7 @@ function register(obj, socket){
 					userInfo["user_id"] = obj.user_id;
 					userInfo["coin"] = 50;
 					userInfo["name"] = obj.name;
-					userInfo["end_time"] = new Date().getTime();
+					userInfo["end_time"] = end_time;
 					userInfo["raid_damaged"] = 0;
 					userInfo["raid_cnt"] = 3;
 					
@@ -157,7 +162,7 @@ function register(obj, socket){
 					
 					skills[2]["name"] = "잎날가르기"
 					skills[2]["cool"] = 3
-					skills[2]["power"] = 
+					skills[2]["power"] = 30
 					
 					pokemonInfo["skills"] = skills;
 					userInfo["pokemon"] = pokemonInfo;
