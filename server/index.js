@@ -77,8 +77,9 @@ function getRaidRanking(socket){
 						
 						var obj = {"guild": i+1};
 						var users = [];
+
 						
-						for(var j=0;j<rows[i].length;j++){	
+						for(var j=0;j<rows[i].length;j++){
 							users.push({"name":rows[i][j].name, "damage": rows[i][j].raid_damage});
 						}
 						
@@ -117,8 +118,10 @@ function register(obj, socket){
 					
 					socket.kakao_id = obj.user_id;
 					userInfo["user_id"] = obj.user_id;
-					userInfo["coin"] = 0;
+					userInfo["coin"] = 50;
 					userInfo["name"] = obj.name;
+					userInfo["end_time"] = new Date().getTime();
+					
 					pokemonInfo["id"] = poke_id;
 					pokemonInfo["level"] = 1;
 					pokemonInfo["number"] = obj.pokeNum;
@@ -153,7 +156,8 @@ function register(obj, socket){
 
 function update(obj){
 	
-	var userQuery = `UPDATE users SET coin = ${obj.coin} WHERE kakao_id='${obj.user_id}'`;
+	
+	var userQuery = `UPDATE users SET coin = ${obj.coin}, end_time = ${obj.endTime} WHERE kakao_id='${obj.user_id}'`;
 	var skills = obj.poke.skills;
 	var pokemonQuery = `UPDATE pokemon SET level = ${obj.poke.level}, exp = ${obj.poke.exp}, skills = JSON_MERGE_PATCH(skills, '${JSON.stringify(skills)}'), number = ${obj.poke.number} WHERE id='${obj.poke.id}'`;
 
@@ -179,6 +183,8 @@ function login(user_id, socket){
 		  userInfo["user_id"] = userRow[0].kakao_id;
           userInfo["coin"] = userRow[0].coin;
 		  userInfo["name"] = userRow[0].name;
+			userInfo["guild"] = userRow[0].guild;
+		  userInfo["end_time"] = userRow[0].end_time;
           pokemon_id = userRow[0].pokemon_id;
         
           connection.query(`SELECT * from pokemon WHERE id='${pokemon_id}'`, 
