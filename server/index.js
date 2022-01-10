@@ -35,6 +35,11 @@ io.on('connection', (socket) => {
 	
 	socket.on("raid", () => {
 		getRaidRanking(socket);
+		connection.query(`SELECT raid_cnt FROM users WHERE kakao_id='${socket.kakao_id}'`,
+						(_, row, __) => {
+								
+			socket.emit('raidCnt', String(row[0].raid_cnt));
+		})
 	})
 	
 	socket.on('disconnect', () => {
@@ -110,6 +115,8 @@ function register(obj, socket){
 				VALUES (${poke_id}, 1, JSON_MERGE_PATCH(skills, '${JSON.stringify(skills)}'), 0, ${obj.pokeNum})`, 
 								(_, __, ___) => {
 					
+					socket.kakao_id = obj.user_id;
+					userInfo["user_id"] = obj.user_id;
 					userInfo["coin"] = 0;
 					userInfo["name"] = obj.name;
 					pokemonInfo["id"] = poke_id;
@@ -168,6 +175,7 @@ function login(user_id, socket){
      (_, userRow, __) => {
        
         if(userRow.length > 0){
+		  socket.kakao_id = userRow[0].kakao_id;
 		  userInfo["user_id"] = userRow[0].kakao_id;
           userInfo["coin"] = userRow[0].coin;
 		  userInfo["name"] = userRow[0].name;
