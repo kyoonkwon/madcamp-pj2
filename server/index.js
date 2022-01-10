@@ -68,7 +68,7 @@ app.get("/", (req, res) => {
 function applyGuildDamages(guild, damage, socket){
 	
 	connection.query(`SELECT hp FROM raid WHERE guild=${guild}`, (_, row, __) =>{
-		console.log(guild, row);
+		//console.log(guild, row);
 		var curHp = row[0].hp;
 		var nowHp = Math.max(0, curHp - damage);
 		connection.query(`UPDATE raid SET hp = ${nowHp} where guild=${guild}`, (_, __, ___) => {
@@ -82,9 +82,9 @@ function getRaidRanking(socket){
 	
 	var query1 = "SELECT guild, name, raid_damage FROM users WHERE guild="
 	var query2 = " ORDER BY raid_damage DESC"
-	var query3 
 	
 	var raidRanking = [];
+	
 	
 	connection.query(query1+"1"+query2, (_, row1, __)=>{
 		connection.query(query1+"2"+query2, (_, row2, __)=>{
