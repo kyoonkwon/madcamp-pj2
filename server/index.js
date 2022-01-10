@@ -12,7 +12,7 @@ const connection = mysql.createConnection({
   password : process.env.DBPASS,
   database : process.env.DBNAME
 });
-const port = 80;
+const port = 8080;
 
 io.on('connection', (socket) => {
 	console.log("user connect");
@@ -33,6 +33,10 @@ io.on('connection', (socket) => {
 		
 	})
 	
+	socket.on("raid", () => {
+		getRaidRanking(socket);
+	})
+	
 	socket.on('disconnect', () => {
 		console.log('user disconnect')
 	});
@@ -48,6 +52,15 @@ app.get("/", (req, res) => {
 
 })
 
+function getRaidRanking(socket){
+	
+	var query = "SELECT class, name, raid_damage from users GROUP BY class"
+	connection.query(query, (_, row, __)=>{
+		console.log(row);
+	})
+	
+}
+
 function register(obj, socket){
 	
 	
@@ -60,7 +73,7 @@ function register(obj, socket){
 
 		connection.query('SELECT MAX(id) FROM pokemon', (_, prow, __) => {
 			var poke_id = prow[0]['MAX(id)']+1
-			var skills = [{"id": 1, "level":1}];
+			var skills = [{"id": 1, "level":1}, {"id": 2, "level":1}, {"id": 3, "level":1}];
 			connection.query(`INSERT INTO users (id, kakao_id, name, pokemon_id, coin, class) 
 			VALUES (${user_id}, '${obj.user_id}', '${obj.name}', ${poke_id}, 0, ${obj.classValue})`,
 							(_, __, ___) => {
@@ -74,9 +87,19 @@ function register(obj, socket){
 					pokemonInfo["level"] = 1;
 					pokemonInfo["number"] = obj.pokeNum;
 					pokemonInfo["exp"] = 0;
+					
 					skills[0]["name"] = "몸통박치기"
-					skills[0]["cool"] = 5
+					skills[0]["cool"] = 1
 					skills[0]["power"] = 10
+					
+					skills[1]["name"] = "파괴광선"
+					skills[1]["cool"] = 5
+					skills[1]["power"] = 50
+					
+					skills[2]["name"] = "잎날가르기"
+					skills[2]["cool"] = 3
+					skills[2]["power"] = 
+					
 					pokemonInfo["skills"] = skills;
 					userInfo["pokemon"] = pokemonInfo;
 					userInfo["guild"] = obj.classValue;
@@ -116,6 +139,7 @@ function login(user_id, socket){
      (_, userRow, __) => {
        
         if(userRow.length > 0){
+		  userInfo["user_id"] = userRow[0].kakao_id;
           userInfo["coin"] = userRow[0].coin;
 		  userInfo["name"] = userRow[0].name;
           pokemon_id = userRow[0].pokemon_id;
