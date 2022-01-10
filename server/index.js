@@ -67,11 +67,11 @@ app.get("/", (req, res) => {
 
 function applyGuildDamages(guild, damage, socket){
 	
-	connection.query(`SELECT hp FROM raid WHERE guild=${obj.guild}`, (_, row, __) =>{
+	connection.query(`SELECT hp FROM raid WHERE guild=${guild}`, (_, row, __) =>{
 		var curHp = row[0].hp;
-		var nowHp = Math.max(0, curHp - obj.damage);
-		connection.query(`UPDATE raid SET hp = ${nowHp} where guild=${obj.guild}`)
-		socket.emit("bossHp", `{"hp": ${nowHp}}`);
+		var nowHp = Math.max(0, curHp - damage);
+		connection.query(`UPDATE raid SET hp = ${nowHp} where guild=${guild}`)
+		socket.emit("bossHp", `${nowHp}`);
 	})
 }
 
