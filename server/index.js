@@ -35,11 +35,10 @@ io.on('connection', (socket) => {
 	
 	socket.on("raid", () => {
 		getRaidRanking(socket);
-		connection.query(`SELECT raid_cnt FROM users WHERE kakao_id='${socket.kakao_id}'`,
-						(_, row, __) => {
-								
-			socket.emit('raidCnt', String(row[0].raid_cnt));
-		})
+	})
+	
+	socket.on("boss", () =>{
+		
 	})
 	
 	socket.on('disconnect', () => {
@@ -121,6 +120,8 @@ function register(obj, socket){
 					userInfo["coin"] = 50;
 					userInfo["name"] = obj.name;
 					userInfo["end_time"] = new Date().getTime();
+					userInfo["raid_damaged"] = 0;
+					userInfo["raid_cnt"] = 3;
 					
 					pokemonInfo["id"] = poke_id;
 					pokemonInfo["level"] = 1;
@@ -157,7 +158,7 @@ function register(obj, socket){
 function update(obj){
 	
 	
-	var userQuery = `UPDATE users SET coin = ${obj.coin}, end_time = ${obj.endTime} WHERE kakao_id='${obj.user_id}'`;
+	var userQuery = `UPDATE users SET coin = ${obj.coin}, end_time = ${obj.endTime}, raid_cnt = ${obj.raidCnt}, raid_damage = ${obj.raidDamage} WHERE kakao_id='${obj.user_id}'`;
 	var skills = obj.poke.skills;
 	var pokemonQuery = `UPDATE pokemon SET level = ${obj.poke.level}, exp = ${obj.poke.exp}, skills = JSON_MERGE_PATCH(skills, '${JSON.stringify(skills)}'), number = ${obj.poke.number} WHERE id='${obj.poke.id}'`;
 
@@ -185,6 +186,8 @@ function login(user_id, socket){
 		  userInfo["name"] = userRow[0].name;
 			userInfo["guild"] = userRow[0].guild;
 		  userInfo["end_time"] = userRow[0].end_time;
+			userInfo["raid_cnt"] = userRow[0].raid_cnt;
+			userInfo["raid_damage"] = userRow[0].raid_damage;
           pokemon_id = userRow[0].pokemon_id;
         
           connection.query(`SELECT * from pokemon WHERE id='${pokemon_id}'`, 
