@@ -54,10 +54,39 @@ app.get("/", (req, res) => {
 
 function getRaidRanking(socket){
 	
-	var query = "SELECT class, name, raid_damage from users GROUP BY class"
-	connection.query(query, (_, row, __)=>{
-		console.log(row);
-	})
+	var query1 = "SELECT guild, name, raid_damage FROM users WHERE guild="
+	var query2 = " ORDER BY raid_damage DESC"
+	
+	var raidRanking = [];
+	
+	connection.query(query1+"1"+query2, (_, row1, __)=>{
+		connection.query(query1+"2"+query2, (_, row2, __)=>{
+			connection.query(query1+"3"+query2, (_, row3, __)=>{
+				connection.query(query1+"4"+query2, (_, row4, __)=>{
+					
+					var rows = [row1, row2, row3, row4];
+					
+					for(var i=0;i<4;i++){
+						
+						//var obj = {"guild": i+1, "name": [1], "damage": [10]};
+						
+						var obj = {"guild": i+1};
+						var users = [];
+						
+						for(var j=0;j<rows[i].length;j++){	
+							users.push({"name":rows[i][j].name, "damage": rows[i][j].raid_damage});
+						}
+						
+						obj["users"] = users;
+						raidRanking.push(obj);
+					}
+					
+					socket.emit("raidInfo", raidRanking);
+					
+				});
+			});
+		});
+	});
 	
 }
 
@@ -74,7 +103,7 @@ function register(obj, socket){
 		connection.query('SELECT MAX(id) FROM pokemon', (_, prow, __) => {
 			var poke_id = prow[0]['MAX(id)']+1
 			var skills = [{"id": 1, "level":1}, {"id": 2, "level":1}, {"id": 3, "level":1}];
-			connection.query(`INSERT INTO users (id, kakao_id, name, pokemon_id, coin, class) 
+			connection.query(`INSERT INTO users (id, kakao_id, name, pokemon_id, coin, guild) 
 			VALUES (${user_id}, '${obj.user_id}', '${obj.name}', ${poke_id}, 0, ${obj.classValue})`,
 							(_, __, ___) => {
 				connection.query(`INSERT INTO pokemon (id, level, skills, exp, number)
