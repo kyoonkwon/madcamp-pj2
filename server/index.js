@@ -136,12 +136,12 @@ function register(obj, socket){
 			connection.query(`INSERT INTO users (id, kakao_id, name, pokemon_id, coin, guild, raid_damage, raid_cnt, end_time)	VALUES (${user_id}, '${obj.user_id}', '${obj.name}', ${poke_id}, 50, ${obj.classValue}, ${0}, ${3}, ${end_time})`,
 							(_, __, ___) => {
 				
-				connection.query(`SELECT * FROM skills WHERE type=${poke_id%3}`, (_, srow, __) => {
+				connection.query(`SELECT * FROM skills WHERE type=${obj.pokeNum/3+1}`, (_, srow, __) => {
 					
 					for(var i=0;i<8;i++){
-						skills.push({"id":(poke_id%3)*8+i, "level":1});
+						skills.push({"id":(obj.pokeNum/3)*8+1+i, "level":1});
 					}
-					
+										
 				
 					connection.query(`INSERT INTO pokemon (id, level, skills, exp, number)
 					VALUES (${poke_id}, 1, JSON_MERGE_PATCH(skills, '${JSON.stringify(skills)}'), 0, ${obj.pokeNum})`, 
