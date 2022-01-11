@@ -130,46 +130,51 @@ function register(obj, socket){
 
 		connection.query('SELECT MAX(id) FROM pokemon', (_, prow, __) => {
 			var poke_id = prow[0]['MAX(id)']+1
-			var skills = [{"id": 1, "level":1}, {"id": 2, "level":1}, {"id": 3, "level":1}];
+			var skills = [];
 			var end_time = new Date().getTime();
 			
 			connection.query(`INSERT INTO users (id, kakao_id, name, pokemon_id, coin, guild, raid_damage, raid_cnt, end_time)	VALUES (${user_id}, '${obj.user_id}', '${obj.name}', ${poke_id}, 50, ${obj.classValue}, ${0}, ${3}, ${end_time})`,
 							(_, __, ___) => {
-				connection.query(`INSERT INTO pokemon (id, level, skills, exp, number)
-				VALUES (${poke_id}, 1, JSON_MERGE_PATCH(skills, '${JSON.stringify(skills)}'), 0, ${obj.pokeNum})`, 
-								(_, __, ___) => {
+				
+				connection.query(`SELECT * FROM skills WHERE type=${poke_id%3}`, (_, srow, __) => {
 					
-					socket.kakao_id = obj.user_id;
-					userInfo["user_id"] = obj.user_id;
-					userInfo["coin"] = 50;
-					userInfo["name"] = obj.name;
-					userInfo["end_time"] = end_time;
-					userInfo["raid_damaged"] = 0;
-					userInfo["raid_cnt"] = 3;
+					for(var i=0;i<8;i++){
+						skills.push({"id":(poke_id%3)*8+i, "level":1});
+					}
 					
-					pokemonInfo["id"] = poke_id;
-					pokemonInfo["level"] = 1;
-					pokemonInfo["number"] = obj.pokeNum;
-					pokemonInfo["exp"] = 0;
+				
+					connection.query(`INSERT INTO pokemon (id, level, skills, exp, number)
+					VALUES (${poke_id}, 1, JSON_MERGE_PATCH(skills, '${JSON.stringify(skills)}'), 0, ${obj.pokeNum})`, 
+									(_, __, ___) => {
 					
-					skills[0]["name"] = "몸통박치기"
-					skills[0]["cool"] = 1
-					skills[0]["power"] = 10
+						socket.kakao_id = obj.user_id;
+						userInfo["user_id"] = obj.user_id;
+						userInfo["coin"] = 50;
+						userInfo["name"] = obj.name;
+						userInfo["end_time"] = end_time;
+						userInfo["raid_damaged"] = 0;
+						userInfo["raid_cnt"] = 3;
+
+						pokemonInfo["id"] = poke_id;
+						pokemonInfo["level"] = 1;
+						pokemonInfo["number"] = obj.pokeNum;
+						pokemonInfo["exp"] = 0;
+						
+						for(var j=0;j<8;j++){
+							skills[j]["name"] = srow[j].name;
+							skills[j]["cool"] = srow[j].cool;
+							skills[j]["power"] = srow[j].power;
+						}
+
+						pokemonInfo["skills"] = skills;
+						userInfo["pokemon"] = pokemonInfo;
+						userInfo["guild"] = obj.classValue;
+
+						//console.log(JSON.stringify(userInfo));
+						socket.emit("registerDone", userInfo);
+						
+					});
 					
-					skills[1]["name"] = "파괴광선"
-					skills[1]["cool"] = 5
-					skills[1]["power"] = 50
-					
-					skills[2]["name"] = "잎날가르기"
-					skills[2]["cool"] = 3
-					skills[2]["power"] = 30
-					
-					pokemonInfo["skills"] = skills;
-					userInfo["pokemon"] = pokemonInfo;
-					userInfo["guild"] = obj.classValue;
-					
-					//console.log(JSON.stringify(userInfo));
-					socket.emit("registerDone", userInfo);
 				});
 
 			});
